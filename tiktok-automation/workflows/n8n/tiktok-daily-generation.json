@@ -1,0 +1,170 @@
+{
+  "name": "TikTok Automation - Geração Diária",
+  "nodes": [
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "field": "hours",
+              "hoursInterval": 24
+            }
+          ]
+        }
+      },
+      "id": "trigger-diario",
+      "name": "Trigger Diário",
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.2,
+      "position": [0, 300]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "http://tiktok-automation:8000/api/generate-daily",
+        "options": {
+          "timeout": 300000
+        }
+      },
+      "id": "chamar-api-geracao",
+      "name": "Chamar API Geração",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [220, 300],
+      "notes": "Chama o endpoint de geração diária do serviço de automação"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "boolean": [
+            {
+              "value": "={{ $json.sucesso === true }}"
+            }
+          ]
+        }
+      },
+      "id": "verificar-sucesso",
+      "name": "Verificar Sucesso",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 1,
+      "position": [440, 300]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.telegram.org/bot{{ $credentials.telegram.token }}/sendMessage",
+        "options": {
+          "body": {
+            "chat_id": "={{ $json.chatId }}",
+            "text": "✅ *Conteúdo TikTok Gerado!*\n\n📰 *Notícia:* {{ $json.noticia.titulo }}\n\n🎬 *Vídeo:* {{ $json.video }}\n\n⏱️ *Duração:* {{ $json.duracao }}s\n\n🕐 {{ $json.timestamp }}",
+            "parse_mode": "Markdown"
+          }
+        }
+      },
+      "id": "notificar-sucesso",
+      "name": "Notificar Sucesso",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [660, 200],
+      "notes": "Envia notificação de sucesso no Telegram"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.telegram.org/bot{{ $credentials.telegram.token }}/sendMessage",
+        "options": {
+          "body": {
+            "chat_id": "={{ $json.chatId }}",
+            "text": "❌ *Erro na Geração TikTok*\n\n📝 *Erro:* {{ $json.erro }}\n\n🕐 {{ $json.timestamp }}",
+            "parse_mode": "Markdown"
+          }
+        }
+      },
+      "id": "notificar-erro",
+      "name": "Notificar Erro",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [660, 400],
+      "notes": "Envia notificação de erro no Telegram"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "http://tiktok-automation:8000/api/upload-pending",
+        "options": {}
+      },
+      "id": "upload-pendente",
+      "name": "Upload Pendente",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [880, 200],
+      "notes": "Faz upload do vídeo gerado (se configurado)"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Trigger Diário": {
+      "main": [
+        [
+          {
+            "node": "Chamar API Geração",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Chamar API Geração": {
+      "main": [
+        [
+          {
+            "node": "Verificar Sucesso",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Verificar Sucesso": {
+      "main": [
+        [
+          {
+            "node": "Notificar Sucesso",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Notificar Erro",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Notificar Sucesso": {
+      "main": [
+        [
+          {
+            "node": "Upload Pendente",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "tiktok-auto-daily-v1",
+  "meta": {
+    "templateVersion": "1.0",
+    "description": "Workflow diário para geração automática de conteúdo TikTok",
+    "tags": ["tiktok", "automacao", "diario", "ia"]
+  },
+  "id": "tiktok_automation_daily",
+  "tags": []
+}

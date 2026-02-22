@@ -1,0 +1,120 @@
+version: '3.8'
+
+services:
+  # ===========================================
+  # SERVIÇO PRINCIPAL - AUTOMAÇÃO TIKTOK
+  # ===========================================
+  tiktok-automation:
+    build:
+      context: .
+      dockerfile: docker/Dockerfile
+    container_name: tiktok-automation
+    restart: unless-stopped
+    ports:
+      - "8000:8000"
+    environment:
+      - TZ=America/Sao_Paulo
+      - OPENROUTER_API_KEY=${OPENROUTER_API_KEY:-}
+      - TIKTOK_SESSIONID=${TIKTOK_SESSIONID:-}
+      - LOG_LEVEL=INFO
+    volumes:
+      - ./src:/app/src
+      - ./output:/app/output
+      - ./templates:/app/templates
+      - ./config:/app/config
+      - ./logs:/app/logs
+    working_dir: /app
+    networks:
+      - tiktok-network
+    depends_on:
+      - n8n
+
+  # ===========================================
+  # N8N - ORQUESTRAÇÃO DE WORKFLOWS
+  # ===========================================
+  n8n:
+    image: n8nio/n8n:latest
+    container_name: n8n
+    restart: unless-stopped
+    ports:
+      - "5678:5678"
+    environment:
+      - TZ=America/Sao_Paulo
+      - N8N_HOST=${N8N_HOST:-localhost}
+      - N8N_PORT=5678
+      - N8N_PROTOCOL=http
+      - NODE_ENV=production
+      - WEBHOOK_URL=${WEBHOOK_URL:-http://localhost:5678/}
+      - EXECUTIONS_DATA_PRUNE=true
+      - EXECUTIONS_DATA_MAX_AGE=168
+      - N8N_PERSONALIZATION_SURVEY_ENABLED=false
+      - N8N_VERSION_NOTIFICATIONS_ENABLED=false
+      - N8N_DIAGNOSTICS_ENABLED=false
+      - N8N_ENCRYPTION_KEY=${N8N_ENCRYPTION_KEY:-n8n-encryption-key-change-me}
+    volumes:
+      - n8n_data:/home/node/.n8n
+      - ./docker/n8n/custom-nodes:/home/node/.n8n/custom
+      - ./workflows/n8n:/home/node/workflows
+      - ./output:/app/output
+    networks:
+      - tiktok-network
+    healthcheck:
+      test: ["CMD", "wget", "--spider", "-q", "http://localhost:5678/healthz"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  # ===========================================
+  # CRON SCHEDULER - TRIGGERS AUTOMATIZADOS
+  # ===========================================
+  scheduler:
+    image: alpine:latest
+    container_name: tiktok-scheduler
+    restart: unless-stopped
+    volumes:
+      - ./scripts:/scripts
+      - ./logs:/logs
+    environment:
+      - TZ=America/Sao_Paulo
+      - AUTOMATION_SERVICE_URL=http://tiktok-automation:8000
+    entrypoint: >
+      sh -c "
+        apk add --no-cache curl bash &&
+        echo '0 9 * * * curl -X POST \$AUTOMATION_SERVICE_URL/generate-daily || echo \"\$(date): Generate failed\" >> /logs/scheduler.log' > /etc/crontabs/root &&
+        echo '0 18 * * * curl -X POST \$AUTOMATION_SERVICE_URL/upload-pending || echo \"\$(date): Upload failed\" >> /logs/scheduler.log' >> /etc/crontabs/root &&
+        crond -f -l 2
+      "
+    networks:
+      - tiktok-network
+    depends_on:
+      - tiktok-automation
+
+  # ===========================================
+  # NGINX - REVERSE PROXY (OPCIONAL)
+  # ===========================================
+  nginx:
+    image: nginx:alpine
+    container_name: tiktok-nginx
+    restart: unless-stopped
+    ports:
+      - "8080:80"
+    volumes:
+      - ./docker/nginx/nginx.conf:/etc/nginx/nginx.conf:ro
+      - ./docker/nginx/conf.d:/etc/nginx/conf.d:ro
+      - ./output/videos:/var/www/videos:ro
+    networks:
+      - tiktok-network
+    depends_on:
+      - n8n
+      - tiktok-automation
+    profiles:
+      - with-proxy
+
+networks:
+  tiktok-network:
+    driver: bridge
+    name: tiktok-automation-network
+
+volumes:
+  n8n_data:
+    name: tiktok-n8n-data

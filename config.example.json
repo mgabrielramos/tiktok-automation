@@ -1,0 +1,139 @@
+{
+  "name": "Configurações do Workflow TikTok",
+  "description": "Copie este arquivo para config.json e personalize com suas configurações",
+  "tiktok": {
+    "enabled": false,
+    "oauth2CredentialId": "",
+    "autoPost": false,
+    "privacyLevel": "PUBLIC_TO_EVERYONE",
+    "disableDuet": false,
+    "disableComment": false,
+    "disableStitch": false
+  },
+  "noticias": {
+    "fontes": [
+      {
+        "nome": "G1",
+        "url": "https://rss.globo.com/rss/feeds/ultimas-noticias.xml",
+        "ativo": true
+      },
+      {
+        "nome": "BBC Brasil",
+        "url": "https://feeds.bbci.co.uk/portuguese/rss.xml",
+        "ativo": true
+      },
+      {
+        "nome": "UOL",
+        "url": "https://noticias.uol.com.br/rss/ultimas-noticias.xml",
+        "ativo": false
+      },
+      {
+        "nome": "R7",
+        "url": "https://feeds.r7.com/r7/ultimas-noticias/feed/",
+        "ativo": false
+      },
+      {
+        "nome": "CNN Brasil",
+        "url": "https://www.cnnbrasil.com.br/feed/",
+        "ativo": false
+      }
+    ],
+    "quantidadePorDia": 1,
+    "palavrasChaveFiltro": [],
+    "palavrasChaveBloqueio": [
+      "tragédia",
+      "morte",
+      "assassinato",
+      "violência"
+    ]
+  },
+  "humor": {
+    "templates": [
+      {
+        "nome": "Ironia da Realidade",
+        "titulo": "🎭 VOCÊ NÃO VAI ACREDITAR!",
+        "corpo": "{titulo}\n\nÉ... meus amigos, a realidade superou a ficção de novo! Enquanto isso nos comentários: \"mas que país é esse?\" 😂",
+        "hashtags": ["#humor", "#satira", "#noticias", "#brasil"]
+      },
+      {
+        "nome": "Pergunta Retórica",
+        "titulo": "🤔 SÉRIO ISSO MESMO?",
+        "corpo": "{titulo}\n\nAlguém aí também ficou sem palavras ou só eu? Deixa nos comentários qual sua reação! 👇",
+        "hashtags": ["#humor", "#comentario", "#atualidades", "#viral"]
+      },
+      {
+        "nome": "Comparação Engraçada",
+        "titulo": "😂 ISSO AÍ É TIPO...",
+        "corpo": "{titulo}\n\nÉ igual tentar explicar pra sua avó o que é Bitcoin. Ninguém entende, mas todo mundo opina! 🤷",
+        "hashtags": ["#humor", "#comparacao", "#noticiasdodia", "#meme"]
+      },
+      {
+        "nome": "Plot Twist",
+        "titulo": "🎬 PLOT TWIST DO ANO!",
+        "corpo": "{titulo}\n\nE eu que achei que minha vida era dramática... A realidade sempre vence! Marca aquele amigo que precisa ver isso 👇",
+        "hashtags": ["#plottwist", "#humor", "#realidade", "#tiktokbrasil"]
+      },
+      {
+        "nome": "Reação Exagerada",
+        "titulo": "🚨 ALERTA DE NOTÍCIA BIZARRA!",
+        "corpo": "{titulo}\n\nMINHA REAÇÃO: 😱🤯😵\n\nQuem mais tá assim? Comenta aí!",
+        "hashtags": ["#reacao", "#humor", "#noticiabizarra", "#viralizou"]
+      }
+    ],
+    "templateAleatorio": true,
+    "templateFixo": ""
+  },
+  "agendamento": {
+    "horario": "09:00",
+    "fusoHorario": "America/Sao_Paulo",
+    "diasSemana": [
+      "segunda",
+      "terca",
+      "quarta",
+      "quinta",
+      "sexta",
+      "sabado",
+      "domingo"
+    ]
+  },
+  "notificacao": {
+    "slack": {
+      "enabled": false,
+      "webhookUrl": ""
+    },
+    "email": {
+      "enabled": false,
+      "smtpHost": "",
+      "smtpPort": 587,
+      "smtpUser": "",
+      "smtpPass": "",
+      "destinatario": ""
+    },
+    "telegram": {
+      "enabled": false,
+      "botToken": "",
+      "chatId": ""
+    }
+  },
+  "ia": {
+    "enabled": false,
+    "provedor": "openai",
+    "apiKey": "",
+    "modelo": "gpt-4o-mini",
+    "prompt": "Você é um comediante de stand-up. Crie um roteiro engraçado de 30 segundos baseado nesta notícia para TikTok. Use humor leve, ironia e linguagem casual. Formato:\n\n1. Hook (3 segundos)\n2. Notícia\n3. Piada/comentário engraçado\n4. Call-to-action\n\nNotícia: {titulo}\n{descricao}"
+  },
+  "video": {
+    "metodo": "manual",
+    "pasta": "/app/videos",
+    "tts": {
+      "enabled": false,
+      "provedor": "edge-tts",
+      "voz": "pt-BR-FranciscaNeural"
+    },
+    "ffmpeg": {
+      "enabled": false,
+      "imagemFundo": "/app/templates/fundo_padrao.jpg",
+      "adicionarLegendas": true
+    }
+  }
+}

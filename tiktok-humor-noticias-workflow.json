@@ -1,0 +1,286 @@
+{
+  "name": "TikTok Humor Diário - Notícias",
+  "nodes": [
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "field": "hours",
+              "hoursInterval": 24
+            }
+          ]
+        }
+      },
+      "id": "trigger-diario",
+      "name": "Trigger Diário",
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.2,
+      "position": [0, 300]
+    },
+    {
+      "parameters": {
+        "method": "GET",
+        "url": "https://rss.globo.com/rss/feeds/ultimas-noticias.xml",
+        "options": {}
+      },
+      "id": "busca-noticias-g1",
+      "name": "Buscar Notícias G1",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [220, 300]
+    },
+    {
+      "parameters": {
+        "method": "GET",
+        "url": "https://feeds.bbci.co.uk/portuguese/rss.xml",
+        "options": {}
+      },
+      "id": "busca-noticias-bbc",
+      "name": "Buscar Notícias BBC",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [220, 500]
+    },
+    {
+      "parameters": {
+        "jsCode": "// Extrai e combina notícias dos RSS\nconst g1Items = items[0]?.json?.items || [];\nconst bbcItems = items[1]?.json?.items || [];\n\n// Combina e embaralha\nconst todasNoticias = [...g1Items, ...bbcItems]\n  .filter(item => item?.title && item?.description)\n  .sort(() => Math.random() - 0.5)\n  .slice(0, 5); // Pega 5 notícias aleatórias\n\nreturn todasNoticias.map(noticia => ({\n  json: {\n    titulo: noticia.title.replace(/\\s+/g, ' ').trim(),\n    descricao: noticia.description?.replace(/<[^>]*>/g, '').replace(/\\s+/g, ' ').trim() || '',\n    link: noticia.link || '',\n    dataPublicacao: noticia.pubDate || new Date().toISOString()\n  }\n}));"
+      },
+      "id": "processa-noticias",
+      "name": "Processar Notícias",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [440, 300]
+    },
+    {
+      "parameters": {
+        "jsCode": "// Gera roteiro de humor baseado em templates\nconst noticia = $input.item.json;\n\n// Templates de humor (estilo stand-up/sátira)\nconst templates = [\n  {\n    nome: \"Ironia da Realidade\",\n    roteiro: `🎭 VOCÊ NÃO VAI ACREDITAR! \\n\\n${noticia.titulo}\\n\\nÉ... meus amigos, a realidade superou a ficção de novo! Enquanto isso nos comentários: \"mas que país é esse?\" 😂\\n\\n#humor #satira #noticias #brasil`\n  },\n  {\n    nome: \"Pergunta Retórica\",\n    roteiro: `🤔 SÉRIO ISSO MESMO? \\n\\n${noticia.titulo}\\n\\nAlguém aí também ficou sem palavras ou só eu? Deixa nos comentários qual sua reação! 👇\\n\\n#humor #comentario #atualidades #viral`\n  },\n  {\n    nome: \"Comparação Engraçada\",\n    roteiro: `😂 ISSO AÍ É TIPO... \\n\\n${noticia.titulo}\\n\\nÉ igual tentar explicar pra sua avó o que é Bitcoin. Ninguém entende, mas todo mundo opina! 🤷\\n\\n#humor #comparacao #noticiasdodia #meme`\n  },\n  {\n    nome: \"Plot Twist\",\n    roteiro: `🎬 PLOT TWIST DO ANO! \\n\\n${noticia.titulo}\\n\\nE eu que achei que minha vida era dramática... A realidade sempre vence! Marca aquele amigo que precisa ver isso 👇\\n\\n#plottwist #humor #realidade #tiktokbrasil`\n  },\n  {\n    nome: \"Reação Exagerada\",\n    roteiro: `🚨 ALERTA DE NOTÍCIA BIZARRA! \\n\\n${noticia.titulo}\\n\\nMINHA REAÇÃO: 😱🤯😵\\n\\nQuem mais tá assim? Comenta aí! \\n\\n#reacao #humor #noticiabizarra #viralizou`\n  }\n];\n\n// Seleciona template aleatório\nconst template = templates[Math.floor(Math.random() * templates.length)];\n\nreturn {\n  json: {\n    ...noticia,\n    roteiro: template.roteiro,\n    templateUsado: template.nome,\n    hashtags: template.roteiro.match(/#[\\wçãõáéíóú\\-]+/g)?.join(' ') || '#humor #noticias',\n    duracaoEstimada: '15-30 segundos'\n  }\n};"
+      },
+      "id": "gera-roteiro-humor",
+      "name": "Gerar Roteiro Humor",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [660, 300]
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "video-path",
+              "name": "caminhoVideo",
+              "value": "/app/videos/tiktok_{{ $now.format('yyyy-MM-dd') }}_{{ $randomInt(1, 999) }}.mp4",
+              "type": "string"
+            },
+            {
+              "id": "status",
+              "name": "status",
+              "value": "roteiro_pronto",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "prepara-metadados",
+      "name": "Preparar Metadados",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [880, 300]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://open.tiktokapis.com/v2/post/publish/video/init/",
+        "authentication": "predefinedCredentialType",
+        "nodeCredentialType": "tiktokOAuth2Api",
+        "headers": {},
+        "body": {
+          "post_info": {
+            "title": "={{ $json.roteiro.split('\\n')[0] }}",
+            "privacy_level": ["PUBLIC_TO_EVERYONE"],
+            "disable_duet": false,
+            "disable_comment": false,
+            "disable_stitch": false
+          },
+          "source_info": {
+            "source": "FILE_UPLOAD",
+            "video_size": "={{ $json.tamanhoArquivo || 0 }}",
+            "chunk_size": 10485760,
+            "total_chunk_count": 1
+          }
+        },
+        "options": {}
+      },
+      "id": "tiktok-init-upload",
+      "name": "TikTok - Iniciar Upload",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [1100, 300],
+      "notes": "Requer credencial OAuth2 do TikTok configurada. Este endpoint inicia o processo de upload."
+    },
+    {
+      "parameters": {
+        "operation": "Salvar em Arquivo",
+        "filePath": "={{ $json.caminhoVideo }}",
+        "options": {}
+      },
+      "id": "salvar-roteiro",
+      "name": "Salvar Roteiro (TXT)",
+      "type": "n8n-nodes-base.writeBinaryFiles",
+      "typeVersion": 1,
+      "position": [880, 500],
+      "notes": "Salva o roteiro gerado para você gravar o vídeo manualmente"
+    },
+    {
+      "parameters": {
+        "jsCode": "// Formata saída para exibição\nconst dados = $input.item.json;\n\nreturn {\n  json: {\n    mensagem: \"✅ Roteiro gerado com sucesso!\",\n    noticia_original: dados.titulo,\n    template_usado: dados.templateUsado,\n    roteiro_completo: dados.roteiro,\n    hashtags: dados.hashtags,\n    arquivo_salvo: dados.caminhoVideo.replace('.mp4', '_roteiro.txt'),\n    proximo_passo: \"Grave o vídeo usando este roteiro e faça upload manual ou configure a API do TikTok\"\n  }\n};"
+      },
+      "id": "formata-saida",
+      "name": "Formatar Saída",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [1320, 300]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://hook.slack.com/services/SEU/WEBHOOK/AQUI",
+        "body": {
+          "text": "🎬 Novo roteiro TikTok gerado!\n\n📰 *Notícia:* {{ $json.noticia_original }}\n\n🎭 *Roteiro:*\n{{ $json.roteiro_completo }}\n\n📁 Arquivo: {{ $json.arquivo_salvo }}"
+        },
+        "options": {}
+      },
+      "id": "notifica-slack",
+      "name": "Notificar (Slack/Email)",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [1540, 300],
+      "notes": "Opcional: Notifica quando um roteiro é gerado. Configure seu webhook do Slack ou use nó de Email."
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Trigger Diário": {
+      "main": [
+        [
+          {
+            "node": "Buscar Notícias G1",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Buscar Notícias BBC",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Buscar Notícias G1": {
+      "main": [
+        [
+          {
+            "node": "Processar Notícias",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Buscar Notícias BBC": {
+      "main": [
+        [
+          {
+            "node": "Processar Notícias",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Processar Notícias": {
+      "main": [
+        [
+          {
+            "node": "Gerar Roteiro Humor",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Gerar Roteiro Humor": {
+      "main": [
+        [
+          {
+            "node": "Preparar Metadados",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Salvar Roteiro (TXT)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Preparar Metadados": {
+      "main": [
+        [
+          {
+            "node": "TikTok - Iniciar Upload",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "TikTok - Iniciar Upload": {
+      "main": [
+        [
+          {
+            "node": "Formatar Saída",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Salvar Roteiro (TXT)": {
+      "main": [
+        [
+          {
+            "node": "Formatar Saída",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Formatar Saída": {
+      "main": [
+        [
+          {
+            "node": "Notificar (Slack/Email)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "tiktok-humor-v1",
+  "meta": {
+    "templateVersion": "1.0",
+    "description": "Gera roteiros de humor baseados em notícias diárias para TikTok",
+    "tags": ["tiktok", "humor", "noticias", "automacao", "rss"]
+  },
+  "id": "tiktok_humor_noticias_diarias",
+  "tags": []
+}
