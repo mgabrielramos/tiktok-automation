@@ -1,21 +1,138 @@
-# 🎬 TikTok Humor Diário - Template n8n
+# 🎬 TikTok Automation
 
-Automação para gerar roteiros de humor baseados em notícias atuais e postar no TikTok.
+Automação completa e gratuita para criação e publicação de vídeos no TikTok com IA.
+
+[![Python](https://img.shields.io/badge/Python-3.11-blue.svg)](https://python.org)
+[![FastAPI](https://img.shields.io/badge/FastAPI-0.109-green.svg)](https://fastapi.tiangolo.com)
+[![Docker](https://img.shields.io/badge/Docker-Ready-blue.svg)](https://docker.com)
+[![License](https://img.shields.io/badge/License-MIT-yellow.svg)](tiktok-automation/LICENSE)
 
 ---
 
 ## 📋 Visão Geral
 
-Este workflow automatiza:
-- ✅ Busca de notícias diárias via RSS (G1, BBC Brasil)
-- ✅ Geração de roteiros de humor com templates pré-definidos
-- ✅ Preparação de metadados para postagem
-- ✅ Postagem automática no TikTok (requer configuração OAuth2)
-- ✅ Notificação do roteiro gerado (Slack/Email)
+Este repositório contém dois sistemas complementares de automação para TikTok:
+
+### 1. 🐍 Sistema Python Completo (`tiktok-automation/`)
+
+Pipeline end-to-end que automatiza **toda** a criação e postagem de vídeos:
+
+```
+Notícias (RSS) → IA (Roteiro) → TTS (Áudio) → Vídeo (MoviePy) → TikTok (Upload)
+```
+
+- ✅ Busca de notícias de 5+ fontes RSS (G1, BBC Brasil, UOL, R7, CNN Brasil)
+- ✅ Geração de roteiros de humor com IA gratuita (OpenRouter — Llama 3.3 70B, Gemma 3, etc.)
+- ✅ Narração automática com Edge TTS (vozes neurais Microsoft, 100% gratuito)
+- ✅ Criação de vídeos 1080×1920 com legendas (MoviePy + FFmpeg)
+- ✅ Upload automático para TikTok via cookies (sem API oficial)
+- ✅ Dashboard web com painel de controle completo
+- ✅ Orquestração via n8n + cron scheduler
+- ✅ Banco de dados SQLite para métricas e histórico
+
+### 2. 🔄 Workflow n8n (`tiktok-humor-noticias-workflow.json`)
+
+Template n8n para geração de roteiros de humor diários — ideal para quem já usa n8n:
+
+- ✅ Busca de notícias via RSS (G1, BBC Brasil)
+- ✅ Geração de roteiros com templates pré-definidos
+- ✅ Postagem automática no TikTok via OAuth2
+- ✅ Notificações via Slack ou Email
 
 ---
 
-## 🚀 Instalação
+## 🗂️ Estrutura do Repositório
+
+```
+tiktok-automation/                          ← Raiz do repositório
+├── README.md                               ← Este arquivo
+├── GUIA_VIDEOS.md                          ← Guia de criação de vídeos
+├── config.example.json                     ← Configuração de exemplo
+├── tiktok-humor-noticias-workflow.json     ← Workflow n8n standalone
+│
+└── tiktok-automation/                      ← Sistema Python completo
+    ├── README.md                           ← Documentação completa
+    ├── INICIO_RAPIDO.md                    ← Guia de início rápido (10 min)
+    ├── docker-compose.yml                  ← Orquestração Docker
+    ├── requirements.txt                    ← Dependências Python
+    ├── .env.example                        ← Template de variáveis de ambiente
+    ├── src/                                ← Código-fonte Python
+    │   ├── main.py                         ← API FastAPI
+    │   ├── config.py                       ← Configurações
+    │   └── modules/                        ← Módulos de automação
+    ├── docker/                             ← Arquivos Docker
+    ├── scripts/                            ← Scripts de inicialização
+    ├── workflows/n8n/                      ← Workflows n8n integrados
+    └── docs/                               ← Documentação adicional
+```
+
+---
+
+## 🚀 Início Rápido
+
+### Sistema Python Completo (Recomendado)
+
+```bash
+# 1. Clone o repositório
+git clone https://github.com/mgabrielramos/tiktok-automation.git
+cd tiktok-automation/tiktok-automation
+
+# 2. Configure as variáveis de ambiente
+cp .env.example .env
+# Edite .env e adicione: OPENROUTER_API_KEY=sk_or_...
+
+# 3. Inicie os serviços
+./scripts/start.sh        # Linux/Mac
+scripts\start.bat         # Windows
+
+# 4. Acesse os serviços
+# API:       http://localhost:8000
+# Dashboard: http://localhost:8000/dashboard
+# n8n:       http://localhost:5678
+# Swagger:   http://localhost:8000/docs
+```
+
+Veja o [Guia de Início Rápido](tiktok-automation/INICIO_RAPIDO.md) para instruções completas.
+
+### Workflow n8n Standalone
+
+Para usar apenas o workflow n8n sem o sistema Python completo:
+
+1. Importe `tiktok-humor-noticias-workflow.json` no seu n8n
+2. Configure as credenciais OAuth2 do TikTok
+3. Ative o workflow
+
+Veja a seção [Workflow n8n](#-workflow-n8n-standalone-1) abaixo para o guia completo.
+
+---
+
+## 💰 Custos
+
+| Serviço | Plano | Custo |
+|---------|-------|-------|
+| OpenRouter (IA) | Free tier | R$ 0,00 |
+| Edge TTS | Gratuito | R$ 0,00 |
+| TikTok | Gratuito | R$ 0,00 |
+| n8n | Self-hosted | R$ 0,00 |
+| Docker | Open source | R$ 0,00 |
+| **Total** | | **R$ 0,00/mês** |
+
+---
+
+## 📖 Documentação
+
+| Arquivo | Descrição |
+|---------|-----------|
+| [tiktok-automation/README.md](tiktok-automation/README.md) | Documentação completa do sistema Python |
+| [tiktok-automation/INICIO_RAPIDO.md](tiktok-automation/INICIO_RAPIDO.md) | Guia de início rápido (10 minutos) |
+| [GUIA_VIDEOS.md](GUIA_VIDEOS.md) | Opções para criação de vídeos |
+| [tiktok-automation/docs/DASHBOARD.md](tiktok-automation/docs/DASHBOARD.md) | Guia do Dashboard web |
+| [tiktok-automation/docs/TEMPLATES.md](tiktok-automation/docs/TEMPLATES.md) | Customização de templates de humor |
+| [CONTRIBUTING.md](CONTRIBUTING.md) | Como contribuir com o projeto |
+
+---
+
+## 🔄 Workflow n8n Standalone
 
 ### 1. Importar o Workflow no n8n
 
@@ -276,11 +393,20 @@ Substitua o nó de Slack por:
 
 ## 🎯 Próximos Passos Sugeridos
 
+### Para o Workflow n8n
+
 1. **Teste o workflow** manualmente primeiro
 2. **Configure a API do TikTok** e aguarde aprovação
 3. **Personalize os templates** de humor com sua voz
 4. **Adicione mais fontes** de notícias
-5. **Integre com IA** se quiser geração automática de vídeo
+5. **Migre para o Sistema Python Completo** para ter geração de vídeo automatizada
+
+### Para o Sistema Python Completo
+
+1. Configure `.env` com `OPENROUTER_API_KEY`
+2. Execute `docker-compose up -d` e acesse o Dashboard
+3. Personalize os templates em `src/config.py`
+4. Configure o TikTok SessionID para upload automático
 
 ---
 
@@ -294,12 +420,20 @@ Substitua o nó de Slack por:
 
 ---
 
-## 📞 Suporte
+## 📞 Suporte e Links Úteis
 
-- Documentação n8n: https://docs.n8n.io/
-- TikTok API Docs: https://developers.tiktok.com/
-- Comunidade n8n: https://community.n8n.io/
+- 📖 [Documentação n8n](https://docs.n8n.io/)
+- 🎵 [TikTok API Docs](https://developers.tiktok.com/)
+- 💬 [Comunidade n8n](https://community.n8n.io/)
+- 🤖 [OpenRouter (IA gratuita)](https://openrouter.ai/)
+- 🐛 [Issues / Sugestões](https://github.com/mgabrielramos/tiktok-automation/issues)
 
 ---
 
-**Criado para automação de humor no TikTok 🎭**
+## 🤝 Contribuindo
+
+Contribuições são bem-vindas! Leia o [CONTRIBUTING.md](CONTRIBUTING.md) para saber como.
+
+---
+
+**Feito com ❤️ para criadores de conteúdo brasileiros 🎭**

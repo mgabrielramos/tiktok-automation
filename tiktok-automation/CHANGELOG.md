@@ -4,6 +4,22 @@ Todas as mudanças importantes neste projeto.
 
 ---
 
+## [1.2.0] - 2026-03-15
+
+### 🔧 Melhorias
+
+#### Documentação e Visão Geral do Projeto
+- ✅ Root `README.md` atualizado com visão geral completa do repositório
+- ✅ Adicionado `CONTRIBUTING.md` com guia de contribuição e roadmap detalhado
+- ✅ Seção de sugestões de melhorias documentada para a comunidade
+- ✅ Corrigido caminho hardcoded pessoal nas instruções de instalação
+
+#### Segurança e Configuração
+- ✅ `metrics.db` adicionado ao `.gitignore` (banco de dados local não deve ser versionado)
+- ✅ Banco de dados SQLite removido do rastreamento do git
+
+---
+
 ## [1.1.0] - 2026-02-22
 
 ### 🎉 Adicionado

@@ -67,7 +67,8 @@ Este projeto automatiza **completamente** a criação e postagem de vídeos no T
 ### 1. Clone o Repositório
 
 ```bash
-cd C:\Users\josia\Desktop\32d\tiktok-automation
+git clone https://github.com/mgabrielramos/tiktok-automation.git
+cd tiktok-automation/tiktok-automation
 ```
 
 ### 2. Configure as Variáveis de Ambiente
@@ -564,6 +565,8 @@ docker run --rm \
 3. Commit (`git commit -m 'Adiciona MinhaFeature'`)
 4. Push (`git push origin feature/MinhaFeature`)
 5. Pull Request
+
+Veja o [CONTRIBUTING.md](../CONTRIBUTING.md) para guia completo e roadmap de melhorias.
 
 ---
 
